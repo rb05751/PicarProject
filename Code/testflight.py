@@ -11,56 +11,67 @@ import matplotlib.pyplot as plt
 #...
 
 
-model = tf.keras.models.load_model('/home/pi/PicarProject/Code/tf_model_1212.h5')
+model = tf.keras.models.load_model('/home/pi/PicarProject/Code/tf_model_1215_new.h5')
 cam = cv2.VideoCapture(-1)
 cv2.namedWindow("test")
 
 def img_preprocess(img):
   img = np.array(img, dtype = np.uint8)
   img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-  img = img / 255
+  img = cv2.resize(img, (320,240)) / 255
+  img = img[125:,:,:]
   img = np.expand_dims(img, axis = 0)
   return img
 
+def cam_prep(preprocessed_img):
+    img = np.squeeze(np.array(preprocessed_img))
+    img = img * 255
+    img = img.astype(int)
+    return img
+    
+
 def remote():
     i = 1
-    j = 195
+    j = 201
     while i != 0:
+        for i in range(100):
+            _,_ = cam.read()
+        
+        #Start Program
         sleep(1)
         angles = []
         picar.setup()
         bw = back_wheels.Back_Wheels()
         fw = front_wheels.Front_Wheels()
-        motor_speed = 29
+        motor_speed = 40
         bw.speed = motor_speed
         bw.backward()
         angle = int(input("angle:"))
         if angle == 7:
             _, img = cam.read()
-            angle = 60
+            angle = 70
             fw.turn(angle)
-            cv2.imwrite(f"testimage{j}_angle_{str(angle)}.jpg", img)
+            cv2.imwrite(f"/home/pi/PicarProject/Code/Images/NewImages/image{j}.jpg", img)
             angles.append(angle)
             j += 1
         elif angle == 8:
             _, img = cam.read()
             angle = 80
             fw.turn(angle)
-            cv2.imwrite(f"testimage{j}_angle_{str(angle)}.jpg", img)
+            cv2.imwrite(f"/home/pi/PicarProject/Code/Images/NewImages/image{j}.jpg", img)
             angles.append(angle)
             j += 1
         elif angle == 9:
-            angle = 110
+            angle = 100
             fw.turn(angle)
             _, img = cam.read()
-            cv2.imwrite(f"testimage{j}_angle_{str(angle)}.jpg", img)
+            cv2.imwrite(f"/home/pi/PicarProject/Code/Images/NewImages/image{j}.jpg", img)
             j += 1
         elif angle == 0:
-            i = 0
             motor_speed = 0
             bw.stop()
             stop()
-        i += 1
+            i = 0
 
 def main():
     picar.setup()
@@ -69,24 +80,28 @@ def main():
     bw = back_wheels.Back_Wheels()
     fw = front_wheels.Front_Wheels()
     
-    cam.set(cv2.CAP_PROP_FRAME_WIDTH,  320)
+    cam.set(cv2.CAP_PROP_FRAME_WIDTH, 320)
     cam.set(cv2.CAP_PROP_FRAME_HEIGHT, 240)
     print(cam.get(3),cam.get(4))
     i = 0
     while cam.isOpened():
-            motor_speed = 28
-            _, img = cam.read()#This gets returned as BGR, I think this is okay since OG video was taken with openCV
+        for i in range(100):
+            _,_ = cam.read()
+            #sleep(1)
+        motor_speed = 28
+        _, img = cam.read()#This gets returned as BGR, I think this is okay since OG video was taken with openCV
             #img = img_preprocess(img)
-            cv2.imwrite(f"testimage{i}.jpg", img)
-            img = np.expand_dims(img, axis = 0) / 255
-            print(img.shape)
-            steering_angle = int(model.predict(img)[0][0])
+        img = img_preprocess(img)
+        cp_img = cam_prep(img)
+        print(img.shape)
+        steering_angle = int(model.predict(img)[0][0])
+        cv2.imwrite(f"testimage{i}_angle={steering_angle}.jpg", cp_img)
             #steering_angle = int((steering_angle * .001) + 40)
-            print(steering_angle)
-            bw.speed = motor_speed
-            bw.backward()
-            fw.turn(steering_angle)
-            i += 1
+        print(steering_angle)
+        bw.speed = motor_speed
+        bw.backward()
+        fw.turn(steering_angle)
+        i += 1
 
         #bw.speed = motor_speed
         #bw.forward()
@@ -104,14 +119,18 @@ def test_cam():
     print(cam.get(3),cam.get(4))
     if cam.isOpened():
     #cv2.namedWindow("test")
-        _, img1 = cam.read()
-        cv2.imwrite('testimage1.jpg', img1)
-        img = img_preprocess(img1)
-        cv2.imwrite('testimage2.jpg', img[0,:,:,:])
+        for i in range(100):
+            _,_ = cam.read()
+            
+        _,img_off_cam = cam.read()
+        cv2.imwrite('testimage1.jpg', img_off_cam)
+        img = img_preprocess(img_off_cam)
+        img = cam_prep(img)
+        cv2.imwrite('testimage2.jpg', img)
         print(img.shape)#This gets returned as BGR, I think this is okay since OG video was taken with openCV
-        print(img)
-        img1 = np.expand_dims(img1, axis = 0) /255
-        angle = int(model.predict(img1)[0][0])
+        #print(img)
+        img_mod = img_preprocess(img_off_cam)
+        angle = int(model.predict(img_mod)[0][0])
         print(angle)
     else:
         print("Could not run")
