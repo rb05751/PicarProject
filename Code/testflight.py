@@ -76,6 +76,43 @@ def remote():
             stop()
             i = 0
             
+def obj_locate():
+    picar.setup()
+    #global model
+    model = tf.keras.models.load_model('/home/pi/PicarProject/Code/tf_model_0129_obj_local.h5')
+    
+    bw = back_wheels.Back_Wheels()
+    fw = front_wheels.Front_Wheels()
+    
+    cam.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+    cam.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+    print(cam.get(3),cam.get(4))
+    
+    names = ['nothing','stop','go','25','55','toy']
+    
+    
+    while cam.isOpened():
+        for i in range(100):
+            _,_ = cam.read()
+            
+        start = time.time()
+        _, img_off_cam = cam.read()
+        b,g,r = cv2.split(img_off_cam)
+        img = cv2.merge([r,g,b])
+        img = np.array(cv2.resize(np.array(img, dtype = np.uint8), (320,320))) / 255
+        
+        predictions = model(np.expand_dims(img, axis = 0).astype(np.float32))
+        P_c = predictions[0]
+        print(f"This is Pc: {P_c}")
+        bb_dims = predictions[1]
+        print(f"These are the bb dims: {bb_dims}")
+        classes = predictions[2][0]
+        best_guess = names[int(np.argmax(classes))]
+        print(f"These are the classes: {classes} and this is the name: {best_guess}")
+        cv2.imwrite(f"obj_img.jpg", img*255)
+    
+    
+            
 
 def main():
     picar.setup()
@@ -132,7 +169,7 @@ def save_and_take_image():
             
         _,img_off_cam = cam.read()
         print(img_off_cam.shape)
-        cv2.imwrite('ObjectDetectionImage1.jpg', img_off_cam)
+        cv2.imwrite('ObjDetect/ObjectDetectionImage1.jpg', img_off_cam)
 
 
 def test_cam():
@@ -162,22 +199,82 @@ def test_cam():
     else:
         print("Could not run")
         
+def draw_box(image, xmin,xmax,ymin,ymax):
+  for i in range(ymax-ymin):
+    for j in range(3):
+      if j == 0:
+        image[ymin+i,xmin:xmin + 3, j] = 255
+      else:
+        image[ymin+i,xmin:xmin + 3, j] = 0
+
+  for i in range(xmax-xmin):
+    for j in range(3):
+      if j == 0:
+        image[ymin:ymin+3,xmin+i, j] = 255
+      else:
+        image[ymin:ymin+3,xmin+i, j] = 0
+
+  for i in range(ymax-ymin):
+    for j in range(3):
+      if j == 0:
+        image[ymin+i,xmax-3:xmax, j] = 255
+      else:
+        image[ymin+i,xmax-3:xmax, j] = 0
+
+  for i in range(xmax-xmin):
+    for j in range(3):
+      if j == 0:
+        image[ymax-3:ymax,xmin+i, j] = 255
+      else:
+        image[ymax-3:ymax,xmin+i, j] = 0
+
+  return image
+
+
+
+def draw_and_save(img,bb):
+    dims = bb[0]
+    xmin, xmax, ymin, ymax = dims[0]*320, dims[1]*320, dims[2]*120, dims[3]*120
+    img = draw_box(img, xmin = int(xmin),xmax = int(xmax),ymin = int(ymin),ymax = int(ymax))
+    cv2.imwrite(f"obj_img.jpg", img*255)
+    
+        
         
 def testmodel():
+    cam.set(cv2.CAP_PROP_FRAME_WIDTH,  640)
+    cam.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+    print(cam.get(3),cam.get(4))
+    if cam.isOpened():
+    #cv2.namedWindow("test")
+        for i in range(100):
+            _,_ = cam.read()
+            
+        _,img_off_cam = cam.read()
 
-
-    img = cv2.imread('/home/pi/PicarProject/Code/testimage1.jpg')
-    img = img_preprocess(img)
+    img = np.array(cv2.resize(np.array(img_off_cam, dtype = np.float32), (320,120))) / 255
+    model = tf.keras.models.load_model('/home/pi/PicarProject/Code/tf_model_0120_obj_local.h5')
+    #img = cv2.imread('/home/pi/PicarProject/Code/obj_img.jpg')
     print(img.shape)
-    angles = np.array(list(range(55,105,5)))
     
+    b,g,r = cv2.split(img)
+    img = cv2.merge([r,g,b])
+    
+    names = ['nothing','stop','go','25','55','toy']
  
     start = time.time()
-    steering_angle = model.predict(img)[0]
+    predictions = model.predict(np.expand_dims(img,axis = 0))
     print(type(img))
     print(time.time()-start)
-    steering_angle = int(np.dot(angles,steering_angle))
-    print(steering_angle)
+    #steering_angle = int(np.dot(angles,steering_angle))
+    P_c = predictions[0]
+    print(f"This is Pc: {P_c}")
+    bb_dims = predictions[1]
+    print(f"These are the bb dims: {bb_dims}")
+    classes = predictions[2][0]
+    best_guess = names[int(np.argmax(classes))]
+    print(f"These are the classes: {classes} and this is the name: {best_guess}")
+    draw_and_save(img,bb = bb_dims)
+    
     
 def turn():
     picar.setup()
@@ -201,10 +298,35 @@ def save_and_take_image():
     #cv2.namedWindow("test")
         for i in range(100):
             _,_ = cam.read()
-            
-        _,img_off_cam = cam.read()
-        print(img_off_cam.shape)
-        cv2.imwrite('ObjectDetectionImage50.jpg', img_off_cam)
+        
+        for i in range(1,79):
+            _,img_off_cam = cam.read()
+            cv2.imwrite(f"/home/pi/PicarProject/Code/ObjDetect/ObjectDetectionImage{369 + i}.jpg", img_off_cam)
+            print(f"Took Image {i}")
+            time.sleep(5)
+        
+        
+def inspect_model():
+    sums = 0
+    means = []
+    for i in range(22):
+        model = tf.keras.models.load_model('/home/pi/PicarProject/Code/tf_model_0126_obj_local.h5')
+        print(f"Output: {tf.reduce_sum(model.weights[i])}")
+        sums += tf.reduce_sum(model.weights[i])
+        means.append(tf.reduce_mean(model.weights[i]))
+    print(sums)
+    print(np.mean(means))
+    
+    
+def inspect_camera():
+    image = cv2.imread('ObjDetect/ObjectDetectionImage2.jpg')
+    def img_preprocess(img):
+      img = np.array(img, dtype = np.uint8)
+      img = np.array(cv2.resize(img, (320,120))) / 255
+      return img
+    image = img_preprocess(image)
+    print(f"Mean: {np.mean(image.flatten())}")
+    print(f"Stdev: {np.std(image.flatten())}")
         
 if __name__ == '__main__':
     try:
