@@ -79,7 +79,7 @@ def remote():
 def obj_locate():
     picar.setup()
     #global model
-    model = tf.keras.models.load_model('/home/pi/PicarProject/Code/tf_model_0129_obj_local.h5')
+    model = tf.keras.models.load_model('/home/pi/PicarProject/Code/tf_model_0205_obj_local.h5')
     
     bw = back_wheels.Back_Wheels()
     fw = front_wheels.Front_Wheels()
@@ -299,9 +299,9 @@ def save_and_take_image():
         for i in range(100):
             _,_ = cam.read()
         
-        for i in range(1,79):
+        for i in range(1,251):
             _,img_off_cam = cam.read()
-            cv2.imwrite(f"/home/pi/PicarProject/Code/ObjDetect/ObjectDetectionImage{369 + i}.jpg", img_off_cam)
+            cv2.imwrite(f"/home/pi/PicarProject/Code/ObjDetect/ObjectDetectionImage{447 + i}.jpg", img_off_cam)
             print(f"Took Image {i}")
             time.sleep(5)
         
