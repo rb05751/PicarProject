@@ -1,0 +1,26 @@
+<annotation>
+	<folder>ObjDetect</folder>
+	<filename>ObjectDetectionImage453.jpg</filename>
+	<path>C:\Users\rbeas\Documents\ObjectDetection\PicarProject\Code\ObjDetect\ObjectDetectionImage453.jpg</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>640</width>
+		<height>480</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>stop</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>430</xmin>
+			<ymin>117</ymin>
+			<xmax>505</xmax>
+			<ymax>282</ymax>
+		</bndbox>
+	</object>
+</annotation>

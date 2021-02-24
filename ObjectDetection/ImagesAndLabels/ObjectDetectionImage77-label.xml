@@ -1,0 +1,26 @@
+<annotation>
+	<folder>ObjDetect</folder>
+	<filename>ObjectDetectionImage77.jpg</filename>
+	<path>C:\Users\rbeas\Documents\ObjectDetection\PicarProject\Code\ObjDetect\ObjectDetectionImage77.jpg</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>640</width>
+		<height>480</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>go</name>
+		<pose>Unspecified</pose>
+		<truncated>1</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>594</xmin>
+			<ymin>27</ymin>
+			<xmax>640</xmax>
+			<ymax>407</ymax>
+		</bndbox>
+	</object>
+</annotation>
