@@ -1,0 +1,26 @@
+<annotation>
+	<folder>Deep Learning Research-DESKTOP-EMK236C</folder>
+	<filename>leaning tower of pisa.jpeg</filename>
+	<path>C:/Users/rbeas/OneDrive/Documents/Deep Learning Research-DESKTOP-EMK236C/leaning tower of pisa.jpeg</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>167</width>
+		<height>125</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>Tower</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>54</xmin>
+			<ymin>3</ymin>
+			<xmax>102</xmax>
+			<ymax>118</ymax>
+		</bndbox>
+	</object>
+</annotation>
