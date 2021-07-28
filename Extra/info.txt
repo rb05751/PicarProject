@@ -1,0 +1,3 @@
+This file is for displaying definitions and other useful information that a client of this 
+repository would need to know to use the product successfully. It is similar to a README.md 
+but is more summarized.
